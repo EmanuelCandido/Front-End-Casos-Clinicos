@@ -1228,8 +1228,7 @@ button {
 
 .auth-page {
   align-items: center;
-  background:
-    linear-gradient(90deg, var(--primary-dark) 0 34%, var(--white) 34% 100%);
+  background: var(--white);
   display: flex;
   justify-content: center;
   min-height: 100vh;

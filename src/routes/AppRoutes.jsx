@@ -12,7 +12,8 @@ import ProfessorRegister from '../pages/ProfessorRegister.jsx';
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<ProfessorDashboard />} />
+      <Route path="/" element={<ProfessorRegister />} />
+      <Route path="/dashboard" element={<ProfessorDashboard />} />
       <Route path="/login" element={<ProfessorLogin />} />
       <Route path="/cadastro-professor" element={<ProfessorRegister />} />
       <Route path="/criar-caso/parametros" element={<CreateCaseParameters />} />

@@ -26,7 +26,7 @@ export default function ProfessorLogin() {
             <Link to="/cadastro-professor">Esqueci minha senha</Link>
           </div>
 
-          <Button to="/" variant="primary">
+          <Button to="/dashboard" variant="primary">
             Entrar
           </Button>
         </form>
