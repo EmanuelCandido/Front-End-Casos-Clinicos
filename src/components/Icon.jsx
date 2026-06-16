@@ -50,6 +50,7 @@ const icons = {
   minus: <path d="M4 8h8" />,
   arrowUp: <path d="M8 12V4m0 0L4.8 7.2M8 4l3.2 3.2" />,
   edit: <path d="M9.7 3.2 12.8 6.3 6 13.1H2.9V10L9.7 3.2Zm-1.2 1.2 3.1 3.1" />,
+  search: <path d="M7.2 12.1a4.9 4.9 0 1 0 0-9.8 4.9 4.9 0 0 0 0 9.8Zm3.5-1.4 3 3" />,
 };
 
 export default function Icon({ name, size = 16, className = '' }) {

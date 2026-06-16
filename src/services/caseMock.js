@@ -87,6 +87,47 @@ export const generatedCaseReview = {
 };
 
 // TODO: Substituir por chamada da API quando o backend estiver pronto.
+export const professorDashboard = {
+  metrics: [
+    { label: 'Casos Criados', value: '25', icon: 'note', tone: 'primary' },
+    { label: 'Avaliações Pendentes', value: '48', icon: 'note', tone: 'warning' },
+    { label: 'Turmas Ativas', value: '4', icon: 'people', tone: 'success' },
+  ],
+  classPerformance: [
+    { label: 'Turma 1', value: 44 },
+    { label: 'Turma 2', value: 72 },
+    { label: 'Turma 3', value: 34 },
+    { label: 'Turma 4', value: 51 },
+    { label: 'Turma 5', value: 47 },
+    { label: 'Turma 6', value: 54 },
+    { label: 'Turma 7', value: 41 },
+    { label: 'Turma 8', value: 49 },
+  ],
+  recentCases: [
+    {
+      title: 'Caso de Cardiologia - Insuficiência Cardíaca',
+      date: '18/04/2026',
+      status: 'Ativo',
+    },
+    {
+      title: 'Caso Clínico de Diabetes Tipo 2',
+      date: '12/04/2026',
+      status: 'Concluído',
+    },
+    {
+      title: 'Caso Clínico de Diabetes Tipo 2',
+      date: '12/04/2026',
+      status: 'Concluído',
+    },
+    {
+      title: 'Caso Clínico de Diabetes Tipo 2',
+      date: '12/04/2026',
+      status: 'Concluído',
+    },
+  ],
+};
+
+// TODO: Substituir por chamada da API quando o backend estiver pronto.
 export const selectOptions = {
   specialties: ['Cardiologia', 'Fisioterapia', 'Neurologia', 'Pediatria'],
   difficulties: ['Básico', 'Intermediário', 'Avançado'],

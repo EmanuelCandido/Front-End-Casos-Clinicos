@@ -15,6 +15,7 @@ export default function Sidebar() {
                 {section.items.map((item) => (
                   <NavLink
                     className={({ isActive }) => `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
+                    end={item.path === '/'}
                     key={item.label}
                     to={item.path}
                   >
