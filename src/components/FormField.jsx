@@ -1,11 +1,36 @@
-export default function FormField({ label, placeholder, required = false, full = false, type = 'text' }) {
+export default function FormField({
+  autoComplete,
+  full = false,
+  label,
+  minLength,
+  min,
+  name,
+  onChange,
+  placeholder,
+  required = false,
+  type = 'text',
+  value,
+}) {
+  const controlledProps = value !== undefined ? { value } : {};
+
   return (
     <label className={`field ${full ? 'field--full' : ''}`}>
       <span className="field__label">
         {label}
         {required && <span className="field__required">*</span>}
       </span>
-      <input className="field__control" placeholder={placeholder} type={type} />
+      <input
+        autoComplete={autoComplete}
+        className="field__control"
+        min={min}
+        minLength={minLength}
+        name={name}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        type={type}
+        {...controlledProps}
+      />
     </label>
   );
 }

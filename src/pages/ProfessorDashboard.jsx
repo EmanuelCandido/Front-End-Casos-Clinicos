@@ -1,17 +1,92 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Icon from '../components/Icon.jsx';
 import Sidebar from '../components/Sidebar.jsx';
-import { currentUser, professorDashboard } from '../services/caseMock.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import avatarAnderson from '../assets/avatar-anderson.png';
+import {
+  getProfessor,
+  getProfessorCases,
+  getProfessorReport,
+  listCases,
+} from '../services/pibicApi.js';
+
+const emptyDashboard = {
+  metrics: [
+    { label: 'Casos Criados', value: '0', icon: 'note', tone: 'primary' },
+    { label: 'Casos Publicados', value: '0', icon: 'note', tone: 'success' },
+    { label: 'Rascunhos', value: '0', icon: 'note', tone: 'warning' },
+  ],
+  classPerformance: [
+    { label: 'Respostas', value: 0 },
+    { label: 'Corretas', value: 0 },
+    { label: 'Aproveitamento', value: 0 },
+  ],
+  recentCases: [],
+};
 
 export default function ProfessorDashboard() {
+  const { auth } = useAuth();
+  const [currentUser, setCurrentUser] = useState({
+    name: auth?.username || 'Professor',
+    course: auth?.role || 'PROFESSOR',
+    avatar: avatarAnderson,
+  });
+  const [dashboard, setDashboard] = useState(emptyDashboard);
+  const [feedback, setFeedback] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboard() {
+      setFeedback('');
+      setIsLoading(true);
+
+      try {
+        const idProfessor = auth?.idProfessor;
+        const [professor, cases, report] = await loadDashboardData(idProfessor);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (professor) {
+          setCurrentUser({
+            name: professor.nome,
+            course: professor.materia,
+            avatar: avatarAnderson,
+          });
+        }
+
+        setDashboard(buildDashboard(cases, report));
+      } catch (requestError) {
+        if (isMounted) {
+          setFeedback(requestError.message || 'Não foi possível carregar o dashboard.');
+          setDashboard(emptyDashboard);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [auth]);
+
   return (
     <div className="app-shell">
       <Sidebar />
       <main className="app-main">
         <header className="dashboard-topbar">
           <h1>
-            Bem vindo, <strong>Anderson!</strong>
+            Bem vindo, <strong>{getFirstName(currentUser.name)}!</strong>
           </h1>
 
           <label className="dashboard-search">
@@ -36,8 +111,11 @@ export default function ProfessorDashboard() {
         </header>
 
         <section className="dashboard-page" aria-label="Dashboard do professor">
+          {feedback && <p className="form-feedback form-feedback--error">{feedback}</p>}
+          {isLoading && <p className="form-feedback">Carregando dados da API...</p>}
+
           <div className="dashboard-metrics">
-            {professorDashboard.metrics.map((metric) => (
+            {dashboard.metrics.map((metric) => (
               <article className="metric-card" key={metric.label}>
                 <span className={`metric-card__icon metric-card__icon--${metric.tone}`}>
                   <Icon name={metric.icon} size={24} />
@@ -73,7 +151,7 @@ export default function ProfessorDashboard() {
                   </span>
                 ))}
                 <div className="bar-chart__bars">
-                  {professorDashboard.classPerformance.map((item) => (
+                  {dashboard.classPerformance.map((item) => (
                     <div className="bar-chart__bar-item" key={item.label}>
                       <span className="bar-chart__bar" style={{ height: `${item.value}%` }} />
                       <small>{item.label}</small>
@@ -96,19 +174,111 @@ export default function ProfessorDashboard() {
                 <span>Data</span>
                 <span>Status</span>
               </div>
-              {professorDashboard.recentCases.map((caseItem, index) => (
+              {dashboard.recentCases.map((caseItem, index) => (
                 <div className="cases-table__row" key={`${caseItem.title}-${index}`}>
                   <span>{caseItem.title}</span>
                   <span>{caseItem.date}</span>
-                  <span className={`status-pill status-pill--${caseItem.status === 'Ativo' ? 'active' : 'done'}`}>
+                  <span className={`status-pill status-pill--${caseItem.tone}`}>
                     {caseItem.status}
                   </span>
                 </div>
               ))}
+              {!isLoading && dashboard.recentCases.length === 0 && (
+                <div className="cases-table__row">
+                  <span>Nenhum caso encontrado na API</span>
+                  <span>-</span>
+                  <span className="status-pill status-pill--done">Vazio</span>
+                </div>
+              )}
             </div>
           </section>
         </section>
       </main>
     </div>
   );
+}
+
+async function loadDashboardData(idProfessor) {
+  if (idProfessor) {
+    const [professor, cases, report] = await Promise.all([
+      getProfessor(idProfessor),
+      getProfessorCases(idProfessor),
+      getProfessorReport(idProfessor),
+    ]);
+
+    return [professor, cases, report];
+  }
+
+  const casesPage = await listCases({ page: 0, size: 20 });
+  return [null, normalizePage(casesPage), null];
+}
+
+function buildDashboard(cases, report) {
+  const caseList = Array.isArray(cases) ? cases : [];
+  const publishedCount = caseList.filter((caseItem) => caseItem.status === 'PUBLICADO').length;
+  const draftCount = caseList.filter((caseItem) => caseItem.status === 'RASCUNHO').length;
+  const totalAnswers = report?.totalRespostas || 0;
+  const correctAnswers = report?.totalCorretas || 0;
+  const average = Math.round(report?.aproveitamentoMedio || 0);
+
+  return {
+    metrics: [
+      { label: 'Casos Criados', value: String(caseList.length), icon: 'note', tone: 'primary' },
+      { label: 'Casos Publicados', value: String(publishedCount), icon: 'note', tone: 'success' },
+      { label: 'Rascunhos', value: String(draftCount), icon: 'note', tone: 'warning' },
+    ],
+    classPerformance: [
+      { label: 'Respostas', value: Math.min(totalAnswers, 100) },
+      { label: 'Corretas', value: Math.min(correctAnswers, 100) },
+      { label: 'Aproveitamento', value: average },
+    ],
+    recentCases: caseList.slice(0, 6).map((caseItem) => ({
+      title: caseItem.titulo,
+      date: formatDate(caseItem.dataCriacao),
+      status: getStatusLabel(caseItem.status),
+      tone: getStatusTone(caseItem.status),
+    })),
+  };
+}
+
+function normalizePage(pageOrList) {
+  if (Array.isArray(pageOrList)) {
+    return pageOrList;
+  }
+
+  return pageOrList?.content || [];
+}
+
+function getFirstName(name) {
+  return name?.split(' ')[0] || 'Professor';
+}
+
+function formatDate(value) {
+  if (!value) {
+    return '-';
+  }
+
+  return new Intl.DateTimeFormat('pt-BR').format(new Date(value));
+}
+
+function getStatusLabel(status) {
+  const labels = {
+    PUBLICADO: 'Ativo',
+    RASCUNHO: 'Rascunho',
+    ARQUIVADO: 'Arquivado',
+  };
+
+  return labels[status] || status || '-';
+}
+
+function getStatusTone(status) {
+  if (status === 'PUBLICADO') {
+    return 'active';
+  }
+
+  if (status === 'RASCUNHO') {
+    return 'draft';
+  }
+
+  return 'done';
 }

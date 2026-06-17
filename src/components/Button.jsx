@@ -6,8 +6,10 @@ export default function Button({
   icon,
   iconPosition = 'left',
   loading = false,
+  loadingText = 'Gerando...',
   onClick,
   to,
+  type = 'button',
   variant = 'secondary',
   disabled = false,
 }) {
@@ -15,7 +17,7 @@ export default function Button({
     <>
       {loading && <span className="button__spinner" />}
       {!loading && icon && iconPosition === 'left' && <Icon name={icon} size={20} />}
-      <span>{loading ? 'Gerando...' : children}</span>
+      <span>{loading ? loadingText : children}</span>
       {!loading && icon && iconPosition === 'right' && <Icon name={icon} size={20} />}
     </>
   );
@@ -33,7 +35,7 @@ export default function Button({
       className={`button button--${variant}`}
       disabled={disabled || loading}
       onClick={onClick}
-      type="button"
+      type={type}
     >
       {content}
     </button>

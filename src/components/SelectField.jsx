@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import Icon from './Icon.jsx';
 
-export default function SelectField({ label, options = [], required = false, value }) {
+export default function SelectField({ label, name, onChange, options = [], required = false, value }) {
   const selectOptions = options.length > 0 ? options : [value];
-  const [selectedValue, setSelectedValue] = useState(value);
+  const [internalValue, setInternalValue] = useState(value);
+  const selectedValue = value ?? internalValue;
+
+  const handleChange = (event) => {
+    setInternalValue(event.target.value);
+    onChange?.(event);
+  };
 
   return (
     <label className="field">
@@ -15,7 +21,9 @@ export default function SelectField({ label, options = [], required = false, val
         <span className="select-field__value">{selectedValue}</span>
         <select
           aria-label={label}
-          onChange={(event) => setSelectedValue(event.target.value)}
+          name={name}
+          onChange={handleChange}
+          required={required}
           value={selectedValue}
         >
           {selectOptions.map((option) => (

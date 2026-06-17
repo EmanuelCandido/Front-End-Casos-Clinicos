@@ -4,17 +4,69 @@ import AppLayout from '../components/AppLayout.jsx';
 import Button from '../components/Button.jsx';
 import Stepper from '../components/Stepper.jsx';
 import UploadDropzone from '../components/UploadDropzone.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { useCaseDraft } from '../context/CaseDraftContext.jsx';
+import {
+  buildCasePayload,
+  buildClinicalContentPayload,
+  buildPatientPayload,
+  validateDraftForApi,
+} from '../services/caseMappers.js';
 import { referencesMediaUploads, stepItems } from '../services/caseMock.js';
+import {
+  createCase,
+  createClinicalContent,
+  createPatient,
+  getCompleteCase,
+} from '../services/pibicApi.js';
 
 export default function CreateCaseReferencesMedia() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const { auth } = useAuth();
+  const { draft, setSavedCase, updateDraftSection } = useCaseDraft();
   const navigate = useNavigate();
 
-  const handleGenerateCase = () => {
+  const handleFileChange = (group) => (event) => {
+    updateDraftSection('files', {
+      [group]: Array.from(event.target.files || []).map((file) => file.name),
+    });
+  };
+
+  const handleGenerateCase = async () => {
+    const validationMessage = validateDraftForApi(draft, auth);
+
+    if (validationMessage) {
+      setFeedback(validationMessage);
+      return;
+    }
+
+    setFeedback('');
     setIsGenerating(true);
-    window.setTimeout(() => {
+
+    try {
+      const caseResponse = await createCase(buildCasePayload(draft, auth));
+      const idCaso = caseResponse.idCaso;
+      const [patientResponse, clinicalContentResponse] = await Promise.all([
+        createPatient(buildPatientPayload(draft, idCaso)),
+        createClinicalContent(buildClinicalContentPayload(draft, idCaso)),
+      ]);
+      const completeResponse = await getCompleteCase(idCaso);
+
+      setSavedCase({
+        case: caseResponse,
+        patient: patientResponse,
+        clinicalContent: clinicalContentResponse,
+        complete: completeResponse,
+        savedAt: new Date().toISOString(),
+      });
+
       navigate('/criar-caso/revisao');
-    }, 1400);
+    } catch (requestError) {
+      setFeedback(requestError.message || 'Não foi possível salvar o caso na API.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -28,14 +80,21 @@ export default function CreateCaseReferencesMedia() {
           <Stepper currentStep={4} steps={stepItems} />
 
           <div className="references-form">
-            {referencesMediaUploads.map((upload) => (
+            {referencesMediaUploads.map((upload, index) => (
               <UploadDropzone
+                accept={index === 0 ? 'image/png,image/jpeg' : '.pdf,.doc,.docx,.ppt,.pptx'}
                 description={upload.description}
+                files={index === 0 ? draft.files.clinicalImages : draft.files.documents}
                 key={upload.title}
+                multiple
+                name={index === 0 ? 'clinicalImages' : 'documents'}
+                onChange={handleFileChange(index === 0 ? 'clinicalImages' : 'documents')}
                 title={upload.title}
               />
             ))}
           </div>
+
+          {feedback && <p className="form-feedback form-feedback--error">{feedback}</p>}
 
           <div className="page-actions page-actions--patient">
             <Button icon="note" variant="secondary">
@@ -50,10 +109,11 @@ export default function CreateCaseReferencesMedia() {
                 icon="sparkle"
                 iconPosition="right"
                 loading={isGenerating}
+                loadingText="Salvando..."
                 onClick={handleGenerateCase}
                 variant="primary"
               >
-                Gerar Caso
+                Salvar Caso
               </Button>
             </div>
           </div>

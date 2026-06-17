@@ -1,8 +1,11 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 import { navigationSections } from '../services/navigationMock.js';
 import Icon from './Icon.jsx';
 
 export default function Sidebar() {
+  const { logout } = useAuth();
+
   return (
     <aside className="sidebar">
       <div className="sidebar__top">
@@ -29,7 +32,7 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <button className="sidebar__logout" type="button">
+      <button className="sidebar__logout" onClick={logout} type="button">
         <Icon name="logout" />
         <span>Sair</span>
       </button>

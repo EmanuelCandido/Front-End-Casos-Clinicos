@@ -1,7 +1,9 @@
-export default function CheckboxField({ label }) {
+export default function CheckboxField({ checked, label, name, onChange }) {
+  const controlledProps = checked !== undefined ? { checked } : {};
+
   return (
     <label className="checkbox-field">
-      <input type="checkbox" />
+      <input name={name} onChange={onChange} type="checkbox" {...controlledProps} />
       <span>{label}</span>
     </label>
   );
