@@ -6,7 +6,6 @@ import Sidebar from '../components/Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import profileDefault from '../assets/profile-default.png';
 import {
-  getProfessor,
   getProfessorCases,
   getProfessorReport,
   listCases,
@@ -27,12 +26,7 @@ const emptyDashboard = {
 };
 
 export default function ProfessorDashboard() {
-  const { auth } = useAuth();
-  const [currentUser, setCurrentUser] = useState({
-    name: auth?.username || 'Professor',
-    course: auth?.role || 'PROFESSOR',
-    avatar: profileDefault,
-  });
+  const { auth, profile } = useAuth();
   const [dashboard, setDashboard] = useState(emptyDashboard);
   const [feedback, setFeedback] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -46,18 +40,10 @@ export default function ProfessorDashboard() {
 
       try {
         const idProfessor = auth?.idProfessor;
-        const [professor, cases, report] = await loadDashboardData(idProfessor);
+        const [cases, report] = await loadDashboardData(idProfessor);
 
         if (!isMounted) {
           return;
-        }
-
-        if (professor) {
-          setCurrentUser({
-            name: professor.nome,
-            course: professor.materia,
-            avatar: profileDefault,
-          });
         }
 
         setDashboard(buildDashboard(cases, report));
@@ -86,7 +72,7 @@ export default function ProfessorDashboard() {
       <main className="app-main">
         <header className="dashboard-topbar">
           <h1>
-            Bem vindo, <strong>{getFirstName(currentUser.name)}!</strong>
+            Bem vindo, <strong>{getFirstName(profile.name)}!</strong>
           </h1>
 
           <label className="dashboard-search">
@@ -100,10 +86,10 @@ export default function ProfessorDashboard() {
             </Button>
 
             <button className="profile" type="button">
-              <img alt="" className="profile__avatar" src={currentUser.avatar} />
+              <img alt="" className="profile__avatar" src={profileDefault} />
               <span className="profile__copy">
-                <strong>{currentUser.name}</strong>
-                <small>{currentUser.course}</small>
+                <strong>{profile.name}</strong>
+                <small>{profile.course}</small>
               </span>
               <Icon name="chevronDown" size={10} />
             </button>
@@ -200,17 +186,16 @@ export default function ProfessorDashboard() {
 
 async function loadDashboardData(idProfessor) {
   if (idProfessor) {
-    const [professor, cases, report] = await Promise.all([
-      getProfessor(idProfessor),
+    const [cases, report] = await Promise.all([
       getProfessorCases(idProfessor),
       getProfessorReport(idProfessor),
     ]);
 
-    return [professor, cases, report];
+    return [cases, report];
   }
 
   const casesPage = await listCases({ page: 0, size: 20 });
-  return [null, normalizePage(casesPage), null];
+  return [normalizePage(casesPage), null];
 }
 
 function buildDashboard(cases, report) {

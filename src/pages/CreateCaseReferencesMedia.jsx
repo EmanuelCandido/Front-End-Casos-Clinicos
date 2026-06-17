@@ -24,7 +24,7 @@ export default function CreateCaseReferencesMedia() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [feedback, setFeedback] = useState('');
   const { auth } = useAuth();
-  const { draft, setSavedCase, updateDraftSection } = useCaseDraft();
+  const { draft, resetDraft, setSavedCase, updateDraftSection } = useCaseDraft();
   const navigate = useNavigate();
 
   const handleFileChange = (group) => (event) => {
@@ -60,6 +60,7 @@ export default function CreateCaseReferencesMedia() {
         complete: completeResponse,
         savedAt: new Date().toISOString(),
       });
+      resetDraft();
 
       navigate('/criar-caso/revisao');
     } catch (requestError) {
