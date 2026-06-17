@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext.jsx';
-import avatarAnderson from '../assets/avatar-anderson.png';
+import profileDefault from '../assets/profile-default.png';
 import Icon from './Icon.jsx';
 
 export default function Topbar({ current = 'Parâmetros' }) {
@@ -14,7 +14,7 @@ export default function Topbar({ current = 'Parâmetros' }) {
       </h1>
 
       <button className="profile" type="button">
-        <img alt="" className="profile__avatar" src={avatarAnderson} />
+        <img alt="" className="profile__avatar" src={profileDefault} />
         <span className="profile__copy">
           <strong>{userName}</strong>
           <small>{role}</small>

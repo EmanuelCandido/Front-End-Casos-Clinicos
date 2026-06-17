@@ -18,7 +18,6 @@ export default function SelectField({ label, name, onChange, options = [], requi
         {required && <span className="field__required">*</span>}
       </span>
       <span className="select-field">
-        <span className="select-field__value">{selectedValue}</span>
         <select
           aria-label={label}
           name={name}

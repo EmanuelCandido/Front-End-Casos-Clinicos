@@ -4,7 +4,7 @@ import Button from '../components/Button.jsx';
 import Icon from '../components/Icon.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import avatarAnderson from '../assets/avatar-anderson.png';
+import profileDefault from '../assets/profile-default.png';
 import {
   getProfessor,
   getProfessorCases,
@@ -31,7 +31,7 @@ export default function ProfessorDashboard() {
   const [currentUser, setCurrentUser] = useState({
     name: auth?.username || 'Professor',
     course: auth?.role || 'PROFESSOR',
-    avatar: avatarAnderson,
+    avatar: profileDefault,
   });
   const [dashboard, setDashboard] = useState(emptyDashboard);
   const [feedback, setFeedback] = useState('');
@@ -56,7 +56,7 @@ export default function ProfessorDashboard() {
           setCurrentUser({
             name: professor.nome,
             course: professor.materia,
-            avatar: avatarAnderson,
+            avatar: profileDefault,
           });
         }
 

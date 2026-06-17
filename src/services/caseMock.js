@@ -137,7 +137,7 @@ export const selectOptions = {
 export const currentUser = {
   name: 'Anderson Soares',
   course: 'Fisioterapia',
-  avatar: avatarAnderson,
+  avatar: profileDefault,
 };
 
 export const stepItems = [
@@ -146,4 +146,4 @@ export const stepItems = [
   'Conteúdo Clínico',
   'Referências e Mídias',
 ];
-import avatarAnderson from '../assets/avatar-anderson.png';
+import profileDefault from '../assets/profile-default.png';
